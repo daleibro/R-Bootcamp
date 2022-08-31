@@ -19,7 +19,7 @@ prices <- read.csv("BAU514OD5142.csv")
 
 ### Selection of the Dataset
 
-The Dataset we want to analyze in the cause of this project, is the "Neubauwohnungen nach Bauprojektstatus, Eigentumsart und statistischer Zone seit 2009" Dataset from the opendata.swiss website. The Dataset contains information about housing projects in the city of Zurich since 2009 and holds information such as project status, ownership and location of the project. A full list of the contained variables can be found below. Furthermore, we add data regarding real estate prices from the Zurich Open Data Portal and geospatial Data. 
+The Dataset we want to analyze in the cause of this project, is the "**Neubauwohnungen nach Bauprojektstatus, Eigentumsart und statistischer Zone seit 2009**" Dataset from the opendata.swiss website. The Dataset contains information about housing projects in the city of Zurich since 2009 and holds information such as project status, ownership and location of the project. Furthermore, we add enriching data regarding real estate prices as well as adress data from the City of Zurich Open Data Portal to enrich our main Dataset. 
 
 ......
 
@@ -35,24 +35,26 @@ Following the previous introduction and the goals of our analysis, we aim to ans
 4) How did prices in the different quartiers change over time?
 5) Is there a relation between price development and building project development visible?
 
+......
+
+
+## Data Preparation
+
+## Exploratory Data Analysis
 
 ```{r cars}
-head(data)
+#head(data)
 #str(data)
 #summary(data)
 ```
 
-## Data Exploration
+## Visual Data Analysis
 
-You can also embed plots, for example:
+### Basic visual Analysis / ggplot2
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
+### Special Topic: Mapping / Shiny
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
-## Data Analysis and Modelling
+## Modelling and Prediction
 
 ## Summary and Conclusion
 
