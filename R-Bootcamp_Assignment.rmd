@@ -15,6 +15,12 @@ data <- read.csv("BAU502OD5023.csv")
 prices <- read.csv("BAU514OD5142.csv")
 ```
 
+```{r packages, include=FALSE}
+library(dplyr)
+library(shiny)
+library(knitr)
+```
+
 ## Introduction to the Analysis
 
 ### Selection of the Dataset
@@ -42,8 +48,27 @@ Following the previous introduction and the goals of our analysis, we aim to ans
 
 ## Data Preparation
 
-```{r Prep}
+```{r Prep_Data}
+drop_cols_data <- c("StatZoneSort", "StatZoneCd", "QuarSort", "QuarCd", "KreisSort", "KreisCd", "ProjStatusSort", "EigentumsartSort")
 
+datareduced <- data %>%
+  select(- all_of(drop_cols_data))
+head(datareduced, n = 10)
+```
+
+```{r Prep_Prices}
+drop_cols_prices <- c("QuarCd", "ZoneSort", "FrQmBodenNettoGanzeLieg", "FrQmBodenNettoStwE", "FrQmBodenNettoAlleHA")
+
+pricesreduced <- prices %>%
+  select(- all_of(drop_cols_prices)) %>%
+  select(- filter(.prices, Typ = "Zahl")
+  
+#head(pricesreduced, n = 10)
+```
+
+```{r Combine}
+#datacomb <- left_join(data, prices, by = "QuarLang", "Jahr")
+#head(datacomb, n = 10)
 ```
 
 ## Exploratory Data Analysis
