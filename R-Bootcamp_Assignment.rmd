@@ -65,7 +65,8 @@ Following the previous introduction and the goals of our analysis, we aim to ans
 ### Special Topic: Mapping / Shiny
 
 ```{r VDA_2}
-this is a atest
+this is a a test
+tktktfkkf
 ```
 
 ## Modelling and Prediction
