@@ -90,7 +90,7 @@ pricesreduced <- prices %>%
 ### Special Topic: Mapping / Shiny
 
 ```{r VDA_2}
-
+final testing
 ```
 
 ## Modelling and Prediction
