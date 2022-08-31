@@ -12,15 +12,16 @@ date: "2022-08-29"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 data <- read.csv("BAU502OD5023.csv")
+prices <- read.csv("BAU514OD5142.csv")
 ```
 
 ## Introduction to the Analysis
 
 ### Selection of the Dataset
 
-The Dataset we want to analyze in the cause of this course, is the "Neubauwohnungen nach Bauprojektstatus, Eigentumsart und statistischer Zone seit 2009" Dataset from the opendata.swiss website. The Dataset contains information about housing projects in the city of Zurich since 2009 and holds information such as project status, ownership and location of the project. A full list of the contained variables can be found below. 
+The Dataset we want to analyze in the cause of this project, is the "Neubauwohnungen nach Bauprojektstatus, Eigentumsart und statistischer Zone seit 2009" Dataset from the opendata.swiss website. The Dataset contains information about housing projects in the city of Zurich since 2009 and holds information such as project status, ownership and location of the project. A full list of the contained variables can be found below. Furthermore, we add data regarding real estate prices from the Zurich Open Data Portal and geospatial Data. 
 
-
+......
 
 ### Goals of the Analysis
 
@@ -28,10 +29,12 @@ The Dataset we want to analyze in the cause of this course, is the "Neubauwohnun
 
 Following the previous introduction and the goals of our analysis, we aim to answer the following research questions:
 
-1) How did the number of overall building projects develop over time in different areas?
-2) Who are the main owners / drivers of building projects over time?
+1) How did the number of overall building projects develop over time in different statistical zones / quartiers?
+2) Who are the main owners / drivers of building projects?
 3) Does the share of different building size groups change over time?
-4) Are there further interesting insights and relations to be identified from the data?
+4) How did prices in the different quartiers change over time?
+5) Is there a relation between price development and building project development visible?
+
 
 ```{r cars}
 head(data)
