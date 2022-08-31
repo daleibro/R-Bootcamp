@@ -25,6 +25,8 @@ The Dataset we want to analyze in the cause of this project, is the "**Neubauwoh
 
 ### Goals of the Analysis
 
+The goal of the Analysis is to get an insight into the development of the real estate market in Zurich throughout the past decade. We want to offer a diverse view on several aspects of the market, including the development of different types of projects, prices, owners and locations. This way, we want to identify trends and offer an overview of the market structure.
+
 ### Research questions
 
 Following the previous introduction and the goals of our analysis, we aim to answer the following research questions:
@@ -40,9 +42,13 @@ Following the previous introduction and the goals of our analysis, we aim to ans
 
 ## Data Preparation
 
+```{r Prep}
+
+```
+
 ## Exploratory Data Analysis
 
-```{r cars}
+```{r EDA}
 #head(data)
 #str(data)
 #summary(data)
@@ -52,9 +58,29 @@ Following the previous introduction and the goals of our analysis, we aim to ans
 
 ### Basic visual Analysis / ggplot2
 
+```{r VDA}
+
+```
+
 ### Special Topic: Mapping / Shiny
 
+```{r VDA_2}
+
+```
+
 ## Modelling and Prediction
+
+### Model XYZ
+
+```{r Model}
+
+```
+
+### Prediction XYZ
+
+```{r Prediction}
+
+```
 
 ## Summary and Conclusion
 
