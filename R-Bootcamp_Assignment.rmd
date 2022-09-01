@@ -49,7 +49,7 @@ Following the previous introduction and the goals of our analysis, we aim to ans
 ## Data Preparation
 
 ```{r Prep_Data}
-drop_cols_data <- c("StatZoneSort", "StatZoneCd", "QuarSort", "QuarCd", "KreisSort", "KreisCd", "ProjStatusSort", "EigentumsartSort")
+drop_cols_data <- c("StatZoneSort", "QuarSort", "QuarCd", "KreisSort", "KreisCd", "ProjStatusSort", "EigentumsartSort")
 
 datareduced <- data %>%
   select(- all_of(drop_cols_data))
@@ -60,10 +60,10 @@ head(datareduced, n = 10)
 drop_cols_prices <- c("QuarCd", "ZoneSort", "FrQmBodenNettoGanzeLieg", "FrQmBodenNettoStwE", "FrQmBodenNettoAlleHA")
 
 pricesreduced <- prices %>%
-  select(- all_of(drop_cols_prices)) %>%
-  select(- filter(.prices, Typ = "Zahl")
+  select(- all_of(drop_cols_prices)) #%>%
+  select(- filter(Typ == "Zahl"))
   
-#head(pricesreduced, n = 10)
+head(pricesreduced, n = 10)
 ```
 
 ```{r Combine}
