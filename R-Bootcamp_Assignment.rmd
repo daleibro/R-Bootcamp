@@ -61,8 +61,8 @@ drop_cols_prices <- c("QuarCd", "ZoneSort", "FrQmBodenNettoGanzeLieg", "FrQmBode
 
 pricesreduced <- prices %>%
   select(- all_of(drop_cols_prices)) #%>%
-#  select(- filter(Typ == "Zahl"))
-  
+#  filter(Typ =! "Zahl")
+# %IN% (for multiple values)  
 head(pricesreduced, n = 10)
 ```
 
