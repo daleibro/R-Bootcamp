@@ -60,21 +60,12 @@ head(datareduced, n = 10)
 drop_cols_prices <- c("QuarCd", "ZoneSort", "FrQmBodenNettoGanzeLieg", "FrQmBodenNettoStwE", "FrQmBodenNettoAlleHA")
 
 pricesreduced <- prices %>%
-  select(- all_of(drop_cols_prices)) #%>%
-#  filter(Typ =! "Zahl")
-# %IN% (for multiple values)  
+  select(- all_of(drop_cols_prices)) %>%
+  filter(Typ != "Zahl")
+
 head(pricesreduced, n = 10)
+str(pricesreduced)
 ```
-
-```{r}
-pricesfiltered <- pricesreduced %>%
-
-filter(pricesreduced$Typ == "Preis")
-head(pricesfiltered)
-```
-
-
-
 
 ```{r Combine}
 #datacomb <- left_join(data, prices, by = "QuarLang", "Jahr")
