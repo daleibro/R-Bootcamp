@@ -52,20 +52,40 @@ Following the previous introduction and the goals of our analysis, we aim to ans
 drop_cols_data <- c("StatZoneSort", "QuarSort", "QuarCd", "KreisSort", "KreisCd", "ProjStatusSort", "EigentumsartSort")
 
 datareduced <- data %>%
-  select(- all_of(drop_cols_data))
+  select(- all_of(drop_cols_data)) %>%
+  group_by() %>%
+  summarise(WhgSum = sum(AnzWhg))
+  #filter(AnzWhg != 0)
 head(datareduced, n = 10)
+str(datareduced)
 ```
 
 ```{r Prep_Prices}
 drop_cols_prices <- c("QuarCd", "ZoneSort", "FrQmBodenNettoGanzeLieg", "FrQmBodenNettoStwE", "FrQmBodenNettoAlleHA")
+price_cols <- c("FrQmBodenGanzeLieg", "FrQmBodenStwE", "FrQmBodenAlleHA", "FrQmWohnflStwE")
 
 pricesreduced <- prices %>%
   select(- all_of(drop_cols_prices)) %>%
-  filter(Typ != "Zahl")
+  filter(Typ != "Zahl") %>%
+  mutate(FrQmBodenGanzeLieg = replace(FrQmBodenGanzeLieg, FrQmBodenGanzeLieg == ".", "")) %>%
+  mutate(FrQmBodenStwE = replace(FrQmBodenStwE, FrQmBodenStwE == ".", "")) %>%
+  mutate(FrQmBodenAlleHA = replace(FrQmBodenAlleHA, FrQmBodenAlleHA == ".", "")) %>%
+  mutate(FrQmWohnflStwE = replace(FrQmWohnflStwE, FrQmWohnflStwE == ".", "")) %>%
+  
+  group_by(QuarLang, Jahr) #%>%
+  #summarise(avg = mean(FrQmBodenGanzeLieg))
 
-head(pricesreduced, n = 10)
-str(pricesreduced)
+head(pricesreduced, n = 50)
+#str(pricesreduced)
+
+
+typeof(prices$FrQmBodenGanzeLieg)
 ```
+
+```{r Prep_Prices_2}
+
+```
+
 
 ```{r Combine}
 #datacomb <- left_join(data, prices, by = "QuarLang", "Jahr")
