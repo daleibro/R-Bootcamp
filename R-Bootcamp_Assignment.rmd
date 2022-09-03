@@ -19,6 +19,7 @@ prices <- read.csv("BAU514OD5142.csv")
 library(dplyr)
 library(shiny)
 library(knitr)
+library(ggplot2)
 ```
 
 ## Introduction to the Analysis
@@ -48,16 +49,23 @@ Following the previous introduction and the goals of our analysis, we aim to ans
 
 ## Data Preparation
 
-```{r Prep_Data}
+```{r Prep_Main}
 drop_cols_data <- c("StatZoneSort", "QuarSort", "QuarCd", "KreisSort", "KreisCd", "ProjStatusSort", "EigentumsartSort")
 
 datareduced <- data %>%
   select(- all_of(drop_cols_data)) %>%
-  group_by() %>%
+  group_by(Jahr, KreisLang, QuarLang, StatZoneCd,ProjStatus, Eigentumsart, AnzWhg) %>%
   summarise(WhgSum = sum(AnzWhg))
   #filter(AnzWhg != 0)
 head(datareduced, n = 10)
-str(datareduced)
+
+datareduced_2 <- data %>%
+  select(- all_of(drop_cols_data)) %>%
+  group_by(Jahr, KreisLang) %>%
+  summarise(WhgSum = sum(AnzWhg))
+  #filter(AnzWhg != 0)
+#head(datareduced_2, n = 40)
+#str(datareduced)
 ```
 
 ```{r Prep_Prices}
@@ -71,25 +79,28 @@ pricesreduced <- prices %>%
   mutate(FrQmBodenStwE = replace(FrQmBodenStwE, FrQmBodenStwE == ".", "")) %>%
   mutate(FrQmBodenAlleHA = replace(FrQmBodenAlleHA, FrQmBodenAlleHA == ".", "")) %>%
   mutate(FrQmWohnflStwE = replace(FrQmWohnflStwE, FrQmWohnflStwE == ".", "")) %>%
+  mutate_at(price_cols, as.integer) %>%
+  group_by(QuarLang, Jahr) %>%
+  summarise_at(price_cols, mean, na.rm = TRUE)
+  #summarise("FrQmBodenGanzeLieg_avg" = mean(FrQmBodenGanzeLieg, na.rm = TRUE)) #%>%
+  #summarise("FrQmBodenStwE_avg" = mean(FrQmBodenStwE, na.rm = TRUE)) %>%
+  #summarise("FrQmBodenAlleHA_avg" = mean(FrQmBodenAlleHA, na.rm = TRUE)) %>%
+  #summarise("FrQmWohnflStwE_avg" = mean(FrQmWohnflStwE, na.rm = TRUE))
   
-  group_by(QuarLang, Jahr) #%>%
-  #summarise(avg = mean(FrQmBodenGanzeLieg))
-
 head(pricesreduced, n = 50)
+
+#typeof(prices$FrQmBodenGanzeLieg)
 #str(pricesreduced)
-
-
-typeof(prices$FrQmBodenGanzeLieg)
 ```
 
-```{r Prep_Prices_2}
+```{r Prep_Locations}
 
 ```
 
 
-```{r Combine}
-#datacomb <- left_join(data, prices, by = "QuarLang", "Jahr")
-#head(datacomb, n = 10)
+```{r Merge}
+datacomb <- left_join(datareduced, pricesreduced, by = "QuarLang", "Jahr")
+head(datacomb, n = 10)
 ```
 
 ## Exploratory Data Analysis
@@ -101,6 +112,14 @@ typeof(prices$FrQmBodenGanzeLieg)
 ```
 
 ## Visual Data Analysis
+
+```{r Test}
+testplot <-
+  ggplot(data = datareduced_2,
+         mapping = aes(y = WhgSum, x = Jahr, colour = KreisLang)) + geom_line()
+
+testplot
+```
 
 ### Basic visual Analysis / ggplot2
 
