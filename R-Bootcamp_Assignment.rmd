@@ -11,7 +11,7 @@ date: "2022-08-29"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-data <- read.csv("BAU502OD5023.csv")
+data <- read.csv("BAU502OD5023.csv", encoding = "UTF-8")
 prices <- read.csv("BAU514OD5142.csv")
 ```
 
@@ -66,6 +66,7 @@ datareduced_2 <- data %>%
   #filter(AnzWhg != 0)
 #head(datareduced_2, n = 40)
 #str(datareduced)
+write.csv(datareduced, "main.csv", fileEncoding = "UTF-8")
 ```
 
 ```{r Prep_Prices}
@@ -88,10 +89,12 @@ pricesreduced <- prices %>%
   #summarise("FrQmWohnflStwE_avg" = mean(FrQmWohnflStwE, na.rm = TRUE))
   
 head(pricesreduced, n = 50)
-
+write.csv(pricesreduced, "pricesreduced.csv", fileEncoding = "UTF-8")
 #typeof(prices$FrQmBodenGanzeLieg)
 #str(pricesreduced)
 ```
+
+
 
 ```{r Prep_Locations}
 
@@ -99,9 +102,14 @@ head(pricesreduced, n = 50)
 
 
 ```{r Merge}
-datacomb <- left_join(datareduced, pricesreduced, by = "QuarLang", "Jahr")
+datacomb <- left_join(datareduced, pricesreduced, by = c("QuarLang" = "QuarLang", "Jahr" = "Jahr"))
 head(datacomb, n = 10)
 ```
+
+```{r}
+write.csv(datacomb, "dq.csv")
+```
+
 
 ## Exploratory Data Analysis
 
