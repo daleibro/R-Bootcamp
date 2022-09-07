@@ -13,6 +13,7 @@ date: "2022-08-29"
 knitr::opts_chunk$set(echo = TRUE)
 data <- read.csv("BAU502OD5023.csv", encoding = "UTF-8")
 prices <- read.csv("BAU514OD5142.csv")
+location <- read.csv("stzh.adm_statzonen_beschr_p.csv")
 ```
 
 ```{r packages, include=FALSE}
