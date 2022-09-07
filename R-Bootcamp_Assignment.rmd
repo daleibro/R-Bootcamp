@@ -107,6 +107,8 @@ datacomb <- left_join(datareduced, pricesreduced, by = c("QuarLang" = "QuarLang"
 head(datacomb, n = 10)
 datafinal <- left_join(datacomb, location, by = c("StatZoneCd" = "kuerzel"))
 head(datafinal, n = 10)
+#write.csv(datafinal, "datafinal.csv", encoding = "UTF-8")
+#readr::write_excel_csv(datafinal, "datafinal.csv")
 ```
 
 ```{r}
