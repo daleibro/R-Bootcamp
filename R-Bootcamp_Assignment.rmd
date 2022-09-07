@@ -98,13 +98,15 @@ head(pricesreduced, n = 50)
 
 
 ```{r Prep_Locations}
-
+head(location, n = 10)
 ```
 
 
 ```{r Merge}
 datacomb <- left_join(datareduced, pricesreduced, by = c("QuarLang" = "QuarLang", "Jahr" = "Jahr"))
 head(datacomb, n = 10)
+datafinal <- left_join(datacomb, location, by = c("StatZoneCd" = "kuerzel"))
+head(datafinal, n = 10)
 ```
 
 ```{r}
