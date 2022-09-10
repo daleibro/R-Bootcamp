@@ -1,12 +1,16 @@
 ---
 title: "R-Bootcamp - Analysis of Building Projects in Zurich"
-subtitle: "MSC.IDS - HSLU Lucerne"
 author: "Keith Lawless, Daniel Leibrock"
+date: "2022-08-29"
 output:
+  html_document:
+    toc: yes
+    toc_depth: '3'
+    df_print: paged
   pdf_document:
     toc: yes
     toc_depth: 3
-date: "2022-08-29"
+subtitle: "MSC.IDS - HSLU Lucerne"
 ---
 
 ```{r setup, include=FALSE}
@@ -21,19 +25,22 @@ library(dplyr)
 library(shiny)
 library(knitr)
 library(ggplot2)
+library(forecast)
+library(kableExtra)
+library(formattable)
 ```
 
 ## Introduction to the Analysis
 
-### Selection of the Dataset
+### Selection of the dataset
 
-The Dataset we want to analyze in the cause of this project, is the "**Neubauwohnungen nach Bauprojektstatus, Eigentumsart und statistischer Zone seit 2009**" Dataset from the opendata.swiss website. The Dataset contains information about housing projects in the city of Zurich since 2009 and holds information such as project status, ownership and location of the project. Furthermore, we add enriching data regarding real estate prices as well as adress data from the City of Zurich Open Data Portal to enrich our main Dataset. 
+The dataset we want to analyze in the cause of this project, is the "**Neubauwohnungen nach Bauprojektstatus, Eigentumsart und statistischer Zone seit 2009**" dataset from the opendata.swiss website. The dataset contains information about housing projects in the city of Zurich since 2009 and holds information such as project status, ownership and location of the project. Furthermore, we add enriching data regarding real estate prices as well as adress data from the City of Zurich Open Data Portal to enrich our main dataset. 
 
 ......
 
 ### Goals of the Analysis
 
-The goal of the Analysis is to get an insight into the development of the real estate market in Zurich throughout the past decade. We want to offer a diverse view on several aspects of the market, including the development of different types of projects, prices, owners and locations. This way, we want to identify trends and offer an overview of the market structure.
+The goal of the Analysis is to get an insight into the development of the real estate market in Zurich throughout the past decade. We want to offer a diverse view on several aspects of the market, including the development of different types of projects, prices, owners and locations. Through this, we want to identify trends and offer an overview of the market structure.
 
 ### Research questions
 
@@ -42,37 +49,47 @@ Following the previous introduction and the goals of our analysis, we aim to ans
 1) How did the number of overall building projects develop over time in different statistical zones / quartiers?
 2) Who are the main owners / drivers of building projects?
 3) Does the share of different building size groups change over time?
-4) How did prices in the different quartiers change over time?
-5) Is there a relation between price development and building project development visible?
+4) How did prices in the different parts of the city (quartiers) change over time?
+5) Is there a relation between price development and building project development?
 
 ......
 
 
 ## Data Preparation
 
-```{r Prep_Main}
+Data preparation consists of several steps. These include:
+
+  - Deletion of obsolete columns from the different data sets
+  - Renaming of several columns
+  - Grouping and summarising of several columns 
+  - Merging of the different datasets
+  
+
+
+```{r Prep_Main, echo = FALSE, include = FALSE}
 drop_cols_data <- c("StatZoneSort", "QuarSort", "QuarCd", "KreisSort", "KreisCd", "ProjStatusSort", "EigentumsartSort")
 
 datareduced <- data %>%
   select(- all_of(drop_cols_data)) %>%
   group_by(Jahr, KreisLang, QuarLang, StatZoneCd,ProjStatus, Eigentumsart, AnzWhg) %>%
   summarise(WhgSum = sum(AnzWhg))
-  #filter(AnzWhg != 0)
-head(datareduced, n = 10)
+
+#head(datareduced, n = 10)
 
 datareduced_2 <- data %>%
   select(- all_of(drop_cols_data)) %>%
   group_by(Jahr, KreisLang) %>%
   summarise(WhgSum = sum(AnzWhg))
-  #filter(AnzWhg != 0)
+
 #head(datareduced_2, n = 40)
-#str(datareduced)
+
 #write.csv(datareduced, "main.csv", fileEncoding = "UTF-8")
 ```
 
-```{r Prep_Prices}
+```{r Prep_Prices, echo = FALSE, include = FALSE}
 drop_cols_prices <- c("QuarCd", "ZoneSort", "FrQmBodenNettoGanzeLieg", "FrQmBodenNettoStwE", "FrQmBodenNettoAlleHA")
 price_cols <- c("FrQmBodenGanzeLieg", "FrQmBodenStwE", "FrQmBodenAlleHA", "FrQmWohnflStwE")
+price_cols_renamed <- c("CHF / $m^{2}$ Boden (Ganze Liegensch.)", "CHF / $m^{2}$ Boden (Stockwerkb.)", "CHF / $m^{2}$ Boden (Kombiniert)", "CHF / $m^{2}$ Wohnfläche (Stockwerkb.)")
 
 pricesreduced <- prices %>%
   select(- all_of(drop_cols_prices)) %>%
@@ -89,7 +106,8 @@ pricesreduced <- prices %>%
   #summarise("FrQmBodenAlleHA_avg" = mean(FrQmBodenAlleHA, na.rm = TRUE)) %>%
   #summarise("FrQmWohnflStwE_avg" = mean(FrQmWohnflStwE, na.rm = TRUE))
   
-head(pricesreduced, n = 50)
+#head(pricesreduced, n = 50)
+
 #write.csv(pricesreduced, "pricesreduced.csv", fileEncoding = "UTF-8")
 #typeof(prices$FrQmBodenGanzeLieg)
 #str(pricesreduced)
@@ -97,36 +115,86 @@ head(pricesreduced, n = 50)
 
 
 
-```{r Prep_Locations}
-head(location, n = 10)
+```{r Prep_Locations, echo = FALSE, include = FALSE}
+#head(location, n = 10)
+#summary(location)
+
+drop_cols_location <- c("objid", "name", "ori", "hali", "vali")
+
+location <- location %>%
+  select(- all_of(drop_cols_location))
 ```
 
 
-```{r Merge}
+```{r Merge, echo = FALSE, include = FALSE}
 datacomb <- left_join(datareduced, pricesreduced, by = c("QuarLang" = "QuarLang", "Jahr" = "Jahr"))
-head(datacomb, n = 10)
+#head(datacomb, n = 10)
+
 datafinal <- left_join(datacomb, location, by = c("StatZoneCd" = "kuerzel"))
-head(datafinal, n = 10)
+head(datafinal, n = 100)
+
 #write.csv(datafinal, "datafinal.csv", encoding = "UTF-8")
 #readr::write_excel_csv(datafinal, "datafinal.csv")
 ```
 
-```{r}
-#write.csv(datacomb, "dq.csv")
-```
-
-
 ## Exploratory Data Analysis
 
-```{r EDA}
-#head(data)
+```{r EDA, echo = FALSE, include = FALSE}
+summary(datafinal)
+ImBau <- datafinal %>% 
+  filter(ProjStatus == "Im Bau")
+Bewilligt <- datafinal %>% 
+  filter(ProjStatus == "Bewilligt")
+
+sum(ImBau$AnzWhg) 
+sum(Bewilligt$AnzWhg)
+sapply(datafinal, function(x) n_distinct(x))
+
 #str(data)
 #summary(data)
 ```
 
+The summary of the final dataframe reveals several insights about the general structure of the data as well as the real estate market itself. 
+
+Regarding the general structure of the data, we can see that in total **27950 different datapoints** spread over a period of 13 years from **2009 until 2021**. In total, projects with a volume of **51016 apartments received approval** while **69194 appartments started construction** in Zurich during this period.  
+*It is not clear, if individual apartments can appear in both categories at different points of time.*
+ 
+The projects are located within **12 "Kreise" / regions**,  split into **34 "Quartiere" / districts** which are then again differentiated into **215 statistical zones**, the most granular geo-statistical level for the city of Zurich. While data about the number of apartments and geographic coordinates is available on this level, price data is only available on Quartier-level. Furthermore, the projects are assigned to **5 different types of ownership**.  
+
+
+**The following table shows information about real estate prices averaged for each year in CHF:**  
+
+
+```{r Price_table, echo = FALSE}
+cols <- c("Jahr", "QuarLang", "FrQmBodenGanzeLieg", "FrQmBodenStwE", "FrQmBodenAlleHA", "FrQmWohnflStwE")
+
+pricetable <- datafinal %>% 
+  rename_at(all_of(price_cols), function(x) price_cols_renamed) %>% 
+  rename(Quartier = QuarLang) %>% 
+  rename(Kreis = KreisLang) %>%  
+  group_by(Jahr, Kreis, Quartier) %>% 
+  summarise_at(price_cols_renamed, mean, na.rm = TRUE)
+
+yearprices <- pricetable %>% 
+  group_by(Jahr) %>% 
+  summarise_at(price_cols_renamed, mean, na.rm = TRUE)
+
+kreisprices <- pricetable %>% 
+  group_by(Kreis) %>% 
+  summarise_at(price_cols_renamed, mean, na.rm = TRUE)
+
+quartierprices <- pricetable %>% 
+  group_by(Quartier) %>% 
+  summarise_at(price_cols_renamed, mean, na.rm = TRUE)
+
+formattable(yearprices,
+            "Jahr" = list(color = "grey", font.weight = "bold"))
+```
+
+
 ## Visual Data Analysis
 
-```{r Test}
+```{r Test, echo = FALSE, eval = FALSE}
 testplot <-
   ggplot(data = datareduced_2,
          mapping = aes(y = WhgSum, x = Jahr, colour = KreisLang)) + geom_line()
@@ -136,14 +204,28 @@ testplot
 
 ### Basic visual Analysis / ggplot2
 
-```{r VDA}
+```{r VDA, echo = FALSE}
+ggplot(yearprices, aes(x = Jahr), colour = price_cols_renamed) +
+  geom_line(aes(y = `CHF / $m^{2}$ Wohnfläche (Stockwerkb.)`), size = 0.5) +
+  geom_line(aes(y = `CHF / $m^{2}$ Boden (Stockwerkb.)`), size = 0.5) +
+  geom_line(aes(y = `CHF / $m^{2}$ Boden (Ganze Liegensch.)`), size = 0.5) +
+  geom_line(aes(y = `CHF / $m^{2}$ Boden (Kombiniert)`), size = 0.5) + 
+  theme(
+    panel.grid.major = element_line(colour = "gray80"),
+    panel.grid.minor = element_line(colour = NA),
+    axis.text = element_text(family = "sans",
+                             face = "bold"),
+    panel.background = element_rect(fill = "white")
+  ) +
+  ylab("Average Price (CHF)") +
+  xlab("")
 
 ```
 
 ### Special Topic: Mapping / Shiny
 
 ```{r VDA_2}
-final testing
+
 ```
 
 ## Modelling and Prediction
