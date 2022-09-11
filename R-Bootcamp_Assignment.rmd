@@ -27,7 +27,9 @@ library(knitr)
 library(ggplot2)
 library(forecast)
 library(kableExtra)
+library(gridExtra)
 library(formattable)
+library(reshape2)
 ```
 
 ## Introduction to the Analysis
@@ -101,10 +103,6 @@ pricesreduced <- prices %>%
   mutate_at(price_cols, as.integer) %>%
   group_by(QuarLang, Jahr) %>%
   summarise_at(price_cols, mean, na.rm = TRUE)
-  #summarise("FrQmBodenGanzeLieg_avg" = mean(FrQmBodenGanzeLieg, na.rm = TRUE)) #%>%
-  #summarise("FrQmBodenStwE_avg" = mean(FrQmBodenStwE, na.rm = TRUE)) %>%
-  #summarise("FrQmBodenAlleHA_avg" = mean(FrQmBodenAlleHA, na.rm = TRUE)) %>%
-  #summarise("FrQmWohnflStwE_avg" = mean(FrQmWohnflStwE, na.rm = TRUE))
   
 #head(pricesreduced, n = 50)
 
@@ -149,9 +147,8 @@ Bewilligt <- datafinal %>%
 sum(ImBau$AnzWhg) 
 sum(Bewilligt$AnzWhg)
 sapply(datafinal, function(x) n_distinct(x))
-
-#str(data)
-#summary(data)
+str(datafinal)
+summary(datafinal)
 ```
 
 The summary of the final dataframe reveals several insights about the general structure of the data as well as the real estate market itself. 
@@ -162,11 +159,24 @@ Regarding the general structure of the data, we can see that in total **27950 di
 The projects are located within **12 "Kreise" / regions**,  split into **34 "Quartiere" / districts** which are then again differentiated into **215 statistical zones**, the most granular geo-statistical level for the city of Zurich. While data about the number of apartments and geographic coordinates is available on this level, price data is only available on Quartier-level. Furthermore, the projects are assigned to **5 different types of ownership**.  
 
 
-**The following table shows information about real estate prices averaged for each year in CHF:**  
+<br/>
 
+## Visual Data Analysis  
+
+In this chapter, we want to visually analyze the structure of the real estate market. Lorem ipsum...
+
+```{r Test, echo = FALSE, eval = FALSE}
+testplot <-
+  ggplot(data = datareduced_2,
+         mapping = aes(y = WhgSum, x = Jahr, colour = KreisLang)) + geom_line()
+
+testplot
+```
 
 ```{r Price_table, echo = FALSE}
 cols <- c("Jahr", "QuarLang", "FrQmBodenGanzeLieg", "FrQmBodenStwE", "FrQmBodenAlleHA", "FrQmWohnflStwE")
+price_cols_renamed <- c("CHF / $m^{2}$ Boden (Ganze Liegensch.)", "CHF / $m^{2}$ Boden (Stockwerkb.)", "CHF / $m^{2}$ Boden (Kombiniert)", "CHF / $m^{2}$ Wohnfläche (Stockwerkb.)")
+kreis_renamed <- c(1:12)
 
 pricetable <- datafinal %>% 
   rename_at(all_of(price_cols), function(x) price_cols_renamed) %>% 
@@ -180,36 +190,39 @@ yearprices <- pricetable %>%
   summarise_at(price_cols_renamed, mean, na.rm = TRUE)
 
 kreisprices <- pricetable %>% 
-  group_by(Kreis) %>% 
+  group_by(Kreis) %>%
   summarise_at(price_cols_renamed, mean, na.rm = TRUE)
 
 quartierprices <- pricetable %>% 
   group_by(Quartier) %>% 
   summarise_at(price_cols_renamed, mean, na.rm = TRUE)
+```
 
+### Price developments and differences
+
+#### Average price development per sq.m. of condominium ownership and ground (CHF)
+<br/>
+
+As a first visual analysis of the data we will look at price developments on different levels. We want to get an overview of the development of yearly-averaged prices over time, split in the different categories available. These are CHF / $m^{2}$ Boden (Ganze Liegenschaft), CHF / $m^{2}$ Boden (Stockwerkbesitz), CHF / $m^{2}$ Boden (Kombiniert) as well as CHF / $m^{2}$ Wohnfläche (Stockwerkbesitz). 
+
+**The following table and plot show information about real estate prices averaged over the whole city of Zurich for each year in CHF:**  
+<br/><br/>
+
+```{r yearprices, echo = FALSE}
 formattable(yearprices,
             "Jahr" = list(color = "grey", font.weight = "bold"))
 ```
 
+<br/><br/>
 
-## Visual Data Analysis
-
-```{r Test, echo = FALSE, eval = FALSE}
-testplot <-
-  ggplot(data = datareduced_2,
-         mapping = aes(y = WhgSum, x = Jahr, colour = KreisLang)) + geom_line()
-
-testplot
-```
-
-### Basic visual Analysis / ggplot2
-
-```{r VDA, echo = FALSE}
-ggplot(yearprices, aes(x = Jahr), colour = price_cols_renamed) +
-  geom_line(aes(y = `CHF / $m^{2}$ Wohnfläche (Stockwerkb.)`), size = 0.5) +
-  geom_line(aes(y = `CHF / $m^{2}$ Boden (Stockwerkb.)`), size = 0.5) +
-  geom_line(aes(y = `CHF / $m^{2}$ Boden (Ganze Liegensch.)`), size = 0.5) +
-  geom_line(aes(y = `CHF / $m^{2}$ Boden (Kombiniert)`), size = 0.5) + 
+```{r yearprices_plot, echo = FALSE, warning = FALSE, message = FALSE}
+ggplot(yearprices, aes(x = Jahr)) +
+  geom_smooth(span = .2, aes(y = `CHF / $m^{2}$ Wohnfläche (Stockwerkb.)`), size = 1, color = "brown2") +
+  geom_smooth(span = .2, aes(y = `CHF / $m^{2}$ Boden (Stockwerkb.)`), size = 0.5, linetype = "dashed") +
+  geom_smooth(span = .2, aes(y = `CHF / $m^{2}$ Boden (Ganze Liegensch.)`), size = 0.5, linetype = "dashed") +
+  geom_smooth(span = .2, aes(y = `CHF / $m^{2}$ Boden (Kombiniert)`), size = 1) + 
+  geom_smooth(aes(y = `CHF / $m^{2}$ Wohnfläche (Stockwerkb.)`), method = "lm", size = 1, color = "brown2", se = FALSE, linetype = "dashed") +
+  geom_smooth(aes(y = `CHF / $m^{2}$ Boden (Kombiniert)`), method = "lm", size = 1, se = FALSE, linetype = "dashed") +
   theme(
     panel.grid.major = element_line(colour = "gray80"),
     panel.grid.minor = element_line(colour = NA),
@@ -217,10 +230,58 @@ ggplot(yearprices, aes(x = Jahr), colour = price_cols_renamed) +
                              face = "bold"),
     panel.background = element_rect(fill = "white")
   ) +
-  ylab("Average Price (CHF)") +
+  ylab("") +
   xlab("")
 
 ```
+
+As we can see, the overall price trend is clearly upwards. The red curve, which represents the price for living space / Wohnfläche in condominium ownership / Stockwerkbesitz, is showing a continuous and constant **growth of about 575 CHF per year** over the observed timeline. The thick blue curve, which represents the price for ground / Boden, combined for both Stockwerkbesitz (upper dashed, blue line) and whole buildings / ganze Liegenschaft (lower dashed, blue line), reveals a yearly average **price increase of about 1000 CHF**.  
+<br/><br/>
+
+#### Average price per sq.m. of condominium ownership and ground (CHF) per Kreis  
+<br/><br/>
+
+```{r kreisprices, echo = FALSE}
+formattable(kreisprices,
+            "Kreis" = list(color = "grey", font.weight = "bold"))
+```
+
+<br/><br/>
+
+```{r kreisprices_plot, echo = FALSE}
+dfm <- melt(kreisprices[,c('Kreis','CHF / $m^{2}$ Wohnfläche (Stockwerkb.)','CHF / $m^{2}$ Boden (Kombiniert)')],id.vars = 1)
+dfm <- dfm %>% 
+    mutate(across(where(is.factor), as.character)) %>%
+    mutate(variable = replace(variable, variable == "CHF / $m^{2}$ Wohnfläche (Stockwerkb.)", "Preis / qm. Wohnfläche")) %>% 
+    mutate(variable = replace(variable, variable == "CHF / $m^{2}$ Boden (Kombiniert)", "Preis / qm. Boden"))
+
+ggplot(dfm, aes(x = reorder(Kreis, -value), y = value)) + 
+    geom_bar(aes(fill = variable), stat = "identity", position = "dodge") + 
+    scale_y_continuous() +
+    ylab("") +
+    xlab("") + 
+    theme(panel.grid.major = element_line(colour = "gray80"), legend.title = element_text(colour = NA), 
+      panel.background = element_rect(fill = "white")) +labs(x = NULL, y = NULL) + theme(legend.position = "top")
+
+plot_1 <- 
+  ggplot(kreisprices) +
+    aes(x = Kreis, fill = Kreis) +
+    geom_col(aes(y = `CHF / $m^{2}$ Wohnfläche (Stockwerkb.)`), show.legend = FALSE) +
+    scale_fill_hue(direction = 1) +
+    xlab("") +
+    ylab("")
+
+plot_2 <-
+  ggplot(kreisprices) +
+    aes(x = Kreis, fill = Kreis) +
+    geom_col(aes(y = `CHF / $m^{2}$ Boden (Kombiniert)`), show.legend = FALSE) +
+    scale_fill_hue(direction = 1) +
+    xlab("") +
+    ylab("")
+
+#grid.arrange(plot_1, plot_2, nrow = 1)
+```
+
 
 ### Special Topic: Mapping / Shiny
 
