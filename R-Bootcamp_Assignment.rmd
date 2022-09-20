@@ -3,13 +3,13 @@ title: "R-Bootcamp - Analysis of Building Projects in Zurich"
 author: "Keith Lawless, Daniel Leibrock"
 date: "2022-08-29"
 output:
+  pdf_document:
+    toc: yes
+    toc_depth: 3
   html_document:
     toc: yes
     toc_depth: '3'
     df_print: paged
-  pdf_document:
-    toc: yes
-    toc_depth: 3
 subtitle: "MSC.IDS - HSLU Lucerne"
 ---
 
@@ -283,10 +283,12 @@ plot_2 <-
 ```
 
 
-### Special Topic: Mapping / Shiny
+### Special Topic: Leaflet with R/Shiny
 
-```{r VDA_2}
+For our chapter of choice, we chose leaflet and integrate it with a simple Shiny App. 
 
+```{r VDA_2, fig.width=13}
+knitr::include_app("https://vordaten.shinyapps.io/StadtZurich/", height = "600px")
 ```
 
 ## Modelling and Prediction
