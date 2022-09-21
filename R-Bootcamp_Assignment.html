@@ -2267,10 +2267,75 @@ Kreis 9
 <h3>Special Topic: Leaflet with R/Shiny</h3>
 <p>For our chapter of choice, we chose leaflet and integrate it with a
 simple Shiny App. A preview of the app is shown below. <a href="https://vordaten.shinyapps.io/StadtZurich/" title="Click to open the app in a new tab">Alternatively, the app is
-also online by clicking here.</a></p>
+available online by clicking here.</a></p>
 <pre class="r"><code>knitr::include_app(&quot;https://vordaten.shinyapps.io/StadtZurich/&quot;, height = &quot;600px&quot;)</code></pre>
 <iframe src="https://vordaten.shinyapps.io/StadtZurich/?showcase=0" width="1248" height="600px" data-external="1">
 </iframe>
+<div id="experience-with-leaflet-and-shiny-integration" class="section level4">
+<h4>Experience with Leaflet and Shiny Integration</h4>
+<p>Our main goal with leaflet was to provide a rich interactive
+experience for users of our app, such that they could intuitively
+explore the cleaned dataset. Initially, there were some challenges to
+overcome and ultimately, we were not entirely satisfied with the final
+outcome. However, in development of the app, some of the challenges we
+encountered forced us to change our design thinking on the overall role
+that maps can play as part of a rich, interactive visual that can tell a
+useful story which is in itself a great thing.</p>
+</div>
+<div id="leaflet-pros" class="section level4">
+<h4>Leaflet Pros</h4>
+<p>Firstly, the range of base map options that are available with
+leaflet are stunning. In the opinion of the authors, this option alone
+makes leaflet the only option when it comes to implementing maps ahead
+of Commerical tools such as Tableau and PowerBI (PowerBI in particular
+is limited here).</p>
+<p>Secondly, the code to quickly develop a map is straightforward. Add
+your data, chose a basemap, select the marker types you would like and
+customise.</p>
+<p>Next - the options to fix the boundaries, zoom level and focus point
+are a big advantage. Again, options like these are absent from tools
+like PowerBI. In these tools, it is entirely possible to mistakenly zoom
+out of the map or move it to another area with no way to reset them.
+With leaflet, you can help the user by ensuring they do not stray from
+the area of the map containing the interesting data points.</p>
+</div>
+<div id="leaflet-cons" class="section level4">
+<h4>Leaflet Cons</h4>
+<p>As mentioned, we experienced a couple of challenges. Firstly
+performance. We would have liked to pass the entire dataset to Leaflet
+and for it to summarise as needed in the background. However, when we
+did this, R-Studio frequently crashed. As a result, we condensed the
+dataset down into an aggregated format, such that the map would display
+quickly and comfortably.</p>
+<p>Secondly, and somewhat related, it was frustrating not to be able to
+use the map as a filter by clicking on one of the polygons. The package
+does indeed contain functionality for generating map click events,
+however, to pass these events to other elements in our app would have
+meant that we also pre-aggregated the data inputs supporting this
+element which was not possible for all elements.</p>
+</div>
+<div id="leaflet-conclusions" class="section level4">
+<h4>Leaflet Conclusions</h4>
+<p>Overall we would recommend leaflet as a map visualization. As
+mentioned, due to some of the challenges we would recommend to our users
+that they think of how we use maps somewhat differently. A personal
+frustration of the author is when searching an address on Google maps,
+it zooms right into the lowest level of the map. Therefore, a wider
+context is missing. Extra steps are required in order for me to zoom out
+and get a general idea of where the location is (in relation to the city
+center, nearest train station, motorway, etc.).</p>
+<p>I would like to make decisions based on that context (is it better to
+drive or get the train) and I can worry about the exact location later
+when I am approaching.</p>
+<p>Similarly with leaflet, I think it is more interesting for users to
+click on a datapoint and then see that update in the context of the
+fixed map.</p>
+<p>Additionally, performance remains a concern. I would recommend to our
+client the use of SQL inside the app could be used to take click events
+and perform the map filtering in the data set in the database, before
+returning the results of that aggregated query to the map or other
+element for the visualization.</p>
+</div>
 </div>
 </div>
 <div id="modelling-and-prediction" class="section level2">
