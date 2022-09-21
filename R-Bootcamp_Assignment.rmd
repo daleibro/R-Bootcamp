@@ -25,6 +25,7 @@ library(dplyr)
 library(shiny)
 library(knitr)
 library(ggplot2)
+library(ggridges)
 library(forecast)
 library(kableExtra)
 library(gridExtra)
@@ -38,7 +39,6 @@ library(reshape2)
 
 The dataset we want to analyze in the cause of this project, is the "**Neubauwohnungen nach Bauprojektstatus, Eigentumsart und statistischer Zone seit 2009**" dataset from the opendata.swiss website. The dataset contains information about housing projects in the city of Zurich since 2009 and holds information such as project status, ownership and location of the project. Furthermore, we add enriching data regarding real estate prices as well as adress data from the City of Zurich Open Data Portal to enrich our main dataset. 
 
-......
 
 ### Goals of the Analysis
 
@@ -48,13 +48,11 @@ The goal of the Analysis is to get an insight into the development of the real e
 
 Following the previous introduction and the goals of our analysis, we aim to answer the following research questions:
 
-1) How did the number of overall building projects develop over time in different statistical zones / quartiers?
-2) Who are the main owners / drivers of building projects?
-3) Does the share of different building size groups change over time?
-4) How did prices in the different parts of the city (quartiers) change over time?
-5) Is there a relation between price development and building project development?
-
-......
+1) How did prices develop, differentiated by the type of ownership?
+2) How did the number of overall building projects develop, differentiated by location?
+3) How did prices develop, differentiated by location?
+4) Is there a relation between price development and building project development?
+5) Are there differences in project numbers on a more granular location level?
 
 
 ## Data Preparation
@@ -77,13 +75,6 @@ datareduced <- data %>%
   summarise(WhgSum = sum(AnzWhg))
 
 #head(datareduced, n = 10)
-
-datareduced_2 <- data %>%
-  select(- all_of(drop_cols_data)) %>%
-  group_by(Jahr, KreisLang) %>%
-  summarise(WhgSum = sum(AnzWhg))
-
-#head(datareduced_2, n = 40)
 
 #write.csv(datareduced, "main.csv", fileEncoding = "UTF-8")
 ```
@@ -163,17 +154,9 @@ The projects are located within **12 "Kreise" / regions**,  split into **34 "Qua
 
 ## Visual Data Analysis  
 
-In this chapter, we want to visually analyze the structure of the real estate market. Lorem ipsum...
+In this chapter, we want to visually analyze the structure of the real estate market.
 
-```{r Test, echo = FALSE, eval = FALSE}
-testplot <-
-  ggplot(data = datareduced_2,
-         mapping = aes(y = WhgSum, x = Jahr, colour = KreisLang)) + geom_line()
-
-testplot
-```
-
-```{r Price_table, echo = FALSE}
+```{r Price_table, echo = FALSE, warning = FALSE, message = FALSE}
 cols <- c("Jahr", "QuarLang", "FrQmBodenGanzeLieg", "FrQmBodenStwE", "FrQmBodenAlleHA", "FrQmWohnflStwE")
 price_cols_renamed <- c("CHF / $m^{2}$ Boden (Ganze Liegensch.)", "CHF / $m^{2}$ Boden (Stockwerkb.)", "CHF / $m^{2}$ Boden (Kombiniert)", "CHF / $m^{2}$ Wohnfläche (Stockwerkb.)")
 kreis_renamed <- c(1:12)
@@ -196,14 +179,25 @@ kreisprices <- pricetable %>%
 quartierprices <- pricetable %>% 
   group_by(Quartier) %>% 
   summarise_at(price_cols_renamed, mean, na.rm = TRUE)
+
+kreis_num <- data %>%
+  select(- all_of(drop_cols_data)) %>%
+  group_by(Jahr, KreisLang) %>%
+  summarise(WhgSum = sum(AnzWhg))
+
+kreis_11 <- data %>%
+  filter(KreisLang == "Kreis 11") %>% 
+  select(- all_of(drop_cols_data)) %>%
+  group_by(Jahr, QuarLang) %>%
+  summarise(WhgSum = sum(AnzWhg))
 ```
 
-### Price developments and differences
+### Price development and differences
 
-#### Average price development per sq.m. of condominium ownership and ground (CHF)
+#### Average price per year & sq.m. of condominium ownership and ground (CHF)
+
 <br/>
-
-As a first visual analysis of the data we will look at price developments on different levels. We want to get an overview of the development of yearly-averaged prices over time, split in the different categories available. These are CHF / $m^{2}$ Boden (Ganze Liegenschaft), CHF / $m^{2}$ Boden (Stockwerkbesitz), CHF / $m^{2}$ Boden (Kombiniert) as well as CHF / $m^{2}$ Wohnfläche (Stockwerkbesitz). 
+The analysis of average price developments per sq.m. of condominium ownership and ground (CHF) is the first visual analysis of the data. We will look at price developments on different levels. We want to get an overview of the development of yearly-averaged prices over time, split in the different categories available. These are CHF / $m^{2}$ Boden (Ganze Liegenschaft), CHF / $m^{2}$ Boden (Stockwerkbesitz), CHF / $m^{2}$ Boden (Kombiniert) as well as CHF / $m^{2}$ Wohnfläche (Stockwerkbesitz). 
 
 **The following table and plot show information about real estate prices averaged over the whole city of Zurich for each year in CHF:**  
 <br/><br/>
@@ -238,15 +232,71 @@ ggplot(yearprices, aes(x = Jahr)) +
 As we can see, the overall price trend is clearly upwards. The red curve, which represents the price for living space / Wohnfläche in condominium ownership / Stockwerkbesitz, is showing a continuous and constant **growth of about 575 CHF per year** over the observed timeline. The thick blue curve, which represents the price for ground / Boden, combined for both Stockwerkbesitz (upper dashed, blue line) and whole buildings / ganze Liegenschaft (lower dashed, blue line), reveals a yearly average **price increase of about 1000 CHF**.  
 <br/><br/>
 
+#### Total number of projected flats per year and Kreis
+
+```{r location_numbers, echo = FALSE, include = FALSE}
+formattable(kreis_num,
+            "Jahr" = list(color = "grey", font.weight = "bold"))
+```
+
+<br/>
+Next, we analyze the **total number of projected flats per year and location** to get an overview of both high- and low building-activity-areas as well as trends over time. For this reason, two separate plots are shown in the following. The first plot displays the sum of projected flats per year for each of the 12 Kreise in Zurich and is well suited to spot overall trends for the specific regions within the city. The second plot also shows the sum of projected flats per Kreis, but this time as a bubble chart. Red and big bubbles represent high numbers of flats in the given year and Kreis, while green, small bubbles display the opposite. This way, we can spot extreme years and regions with overall high or low numbers of projects.
+
+<br/><br/>
+
+```{r location_number, echo = FALSE, warning = FALSE, message = FALSE}
+#kreisorder = c("Kreis 1","Kreis 2","Kreis 3", "Kreis 4","Kreis 5","Kreis 6", "Kreis 7","Kreis 8","Kreis 9", "Kreis 10","Kreis 11","Kreis 12")
+
+plot1 <- ggplot(kreis_num, aes(y = WhgSum, x = Jahr, colour = KreisLang)) +
+          geom_smooth(span = .3, size = 1, se = FALSE, name = "Kreis") +
+           theme(
+           panel.grid.major = element_line(colour = "gray80"),
+           panel.grid.minor = element_line(colour = NA),
+           axis.text = element_text(family = "sans",
+                                    face = "bold"),
+           panel.background = element_rect(fill = "white"),
+           legend.text = element_text(family = "sans"),
+           legend.title = element_blank()
+          ) +
+          labs(x = NULL, y = NULL)
+plot1
+       
+plot2 <- ggplot(kreis_num, aes(x = Jahr, y = KreisLang)) + 
+          geom_point(aes(colour = WhgSum, size = WhgSum), alpha = 0.5) +
+          scale_color_gradient(high = "red", low = "green", name = NULL) +
+          scale_size(range = c(1, 12), guide = FALSE) +
+          theme(
+            axis.text = element_text(family = "sans",
+                                     face = "bold"),
+            panel.background = element_rect(fill = "white"),
+            legend.background = element_rect(fill = "white"),
+            legend.text = element_text(family = "sans")
+          ) +
+          labs(x = NULL, y = NULL)
+plot2
+
+#grid.arrange(plot1, plot2, nrow = 2)
+```
+<br/><br/>
+
+**Plot 1** shows high heterogeneity in overall number and trend of projected flats. While some Kreise show an overall upwards trend (e.g. Kreis 2, green & Kreis 7, violet), others show a strong downwards trend (e.g. Kreis 5, light blue) while there are even Kreise without any trend at all (e.g. Kreis 11, brown-green). What is common for most of the locations is a **very high level of heterogeneity in both absolute values and behavior throughout time**. Especially noticeable are Kreis 9 (pink) with very high, although fluctuant numbers as well as Kreis 1 with practically no building activity on a very continuous level.
+
+**Plot 2** underlines the observations from the first plot. Kreis 9 and Kreis 11 are the locations with the overall highest building activity with maximum yearly values of about 3000 flats per year, with **peaks in 2014 and 2015 for Kreis 9 and in 2020 and 2021 for Kreis 11**. While Kreis 9 clearly peaked and then dropped in numbers after the year 2015, although staying on a overall high level, Kreis 11 experienced a phase of lower building activity in this very period between 2013 and 2016, while coming from a higher level in the years before and also returning to these high levels by showing constant growth from the year 2017 onwards.
+Also visible are the **overall very low numbers in e.g.Kreis 1 and Kreis 8**.
+<br/><br/>
+
 #### Average price per sq.m. of condominium ownership and ground (CHF) per Kreis  
+
+After we have seen some patterns for the overall number of projects in specific locations within the city, we now want to take a look at the price levels in those regions. For this reason,, we create the following table, that shows the aggregated average prices per sq.m. of condominium ownership and ground (CHF) per Kreis. 
 <br/><br/>
 
 ```{r kreisprices, echo = FALSE}
 formattable(kreisprices,
             "Kreis" = list(color = "grey", font.weight = "bold"))
 ```
-
 <br/><br/>
+
+To visualize the data, we decided to plot both the average price per sq.m. of ground as well as the average price per sq.m. of condominium ownership per Kreis as a bar chart.
 
 ```{r kreisprices_plot, echo = FALSE}
 dfm <- melt(kreisprices[,c('Kreis','CHF / $m^{2}$ Wohnfläche (Stockwerkb.)','CHF / $m^{2}$ Boden (Kombiniert)')],id.vars = 1)
@@ -258,30 +308,72 @@ dfm <- dfm %>%
 ggplot(dfm, aes(x = reorder(Kreis, -value), y = value)) + 
     geom_bar(aes(fill = variable), stat = "identity", position = "dodge") + 
     scale_y_continuous() +
-    ylab("") +
-    xlab("") + 
+    labs(x = NULL, y = NULL) + 
     theme(panel.grid.major = element_line(colour = "gray80"), legend.title = element_text(colour = NA), 
       panel.background = element_rect(fill = "white")) +labs(x = NULL, y = NULL) + theme(legend.position = "top")
 
-plot_1 <- 
-  ggplot(kreisprices) +
-    aes(x = Kreis, fill = Kreis) +
-    geom_col(aes(y = `CHF / $m^{2}$ Wohnfläche (Stockwerkb.)`), show.legend = FALSE) +
-    scale_fill_hue(direction = 1) +
-    xlab("") +
-    ylab("")
-
-plot_2 <-
-  ggplot(kreisprices) +
-    aes(x = Kreis, fill = Kreis) +
-    geom_col(aes(y = `CHF / $m^{2}$ Boden (Kombiniert)`), show.legend = FALSE) +
-    scale_fill_hue(direction = 1) +
-    xlab("") +
-    ylab("")
-
+#plot_1 <- 
+#  ggplot(kreisprices) +
+#    aes(x = Kreis, fill = Kreis) +
+#    geom_col(aes(y = `CHF / $m^{2}$ Wohnfläche (Stockwerkb.)`), show.legend = FALSE) +
+#    scale_fill_hue(direction = 1) +
+#    xlab("") +
+#    ylab("")
+#
+#plot_2 <-
+#  ggplot(kreisprices) +
+#    aes(x = Kreis, fill = Kreis) +
+#    geom_col(aes(y = `CHF / $m^{2}$ Boden (Kombiniert)`), show.legend = FALSE) +
+#    scale_fill_hue(direction = 1) +
+#    xlab("") +
+#    ylab("")
+#
 #grid.arrange(plot_1, plot_2, nrow = 1)
 ```
+<br/><br/>
 
+The visualization provides part of the explanation, why some locations are subject to high levels of building activity, while others are not. The **areas with very low building activity like Kreis 1 and Kreis 8 also show some of the highest prices for both ground and condominium ownership** within the whole city. The average prices for ground in Kreis 1 are extremely high and lay around 60.000 CHF / sq.m. At the same time, **areas with very high building activity, like Kreis 9, 11 and 12, are still relatively cheap**. This relation shows the effect of market dynamics and supply and demand: While in the city center (Kreis 1) and other popular areas, where demand is generally very high, supply can't hold up due to the lack of space or regulatory restrictions, which explains low project numbers. This becomes especially obvious for the case of Kreis 1, where ground prices are extreme and project numbers close to zero. Interestingly, prices of condominium ownership in Kreis 1 are, although among the highest in Zurich, by far not as extreme as ground prices, which might again be explained by the lack of ground available in this area. On the other hand, areas that could be defined as outskirts like Kreis 9 and 11, offer affordable prices and at the same time space to build new houses, which leads to a growing demand and as a result higher project numbers.
+<br/><br/>
+
+#### Differences on a more granular location level: Quartier
+
+As the last step of our visual data analysis, we want to dive deeper into one of the previously looked at locations, namely Kreis 11. This location has been one of the Kreise in Zurich with the highest project activity in recent years. We want to find out, if this applies to all areas of the Kreis in equal measure, or **if some Quartiere within Kreis 11 were of higher / lower interest** to investors.
+For this reason, we plot both the number of projected flats / year for each of the three Quartiere in two different variants to get a clear impression of the situation in Kreis 11.
+<br/><br/>
+
+
+```{r kreis_1_quartiere, echo = FALSE, message = FALSE, warning = FALSE}
+plot1 <- ggplot(kreis_11, aes(x = QuarLang, y = Jahr)) + 
+          geom_point(aes(colour = WhgSum, size = WhgSum), alpha = 0.5) +
+          scale_color_gradient(high = "red", low = "green", name = NULL) +
+          scale_size(range = c(1, 12), guide = FALSE) +
+          theme(
+            axis.text = element_text(family = "sans",
+                                     face = "bold"),
+            panel.background = element_rect(fill = "white"),
+            legend.background = element_rect(fill = "white"),
+            legend.text = element_text(family = "sans")
+          ) +
+          labs(x = NULL, y = NULL)
+
+plot2 <- ggplot(kreis_11, aes(x = Jahr, y = QuarLang, height = WhgSum, fill = QuarLang)) +
+          geom_ridgeline() +
+          theme(
+            axis.text = element_text(family = "sans",
+                                     face = "bold"),            
+            panel.background = element_rect(fill = "white"),
+            legend.background = element_rect(fill = "white"),
+            legend.text = element_text(family = "sans"),
+            axis.text.y=element_blank()
+          ) +
+          labs(x = NULL, y = NULL, fill = NULL)
+
+grid.arrange(plot1, plot2, ncol = 1)
+```
+<br/><br/>
+
+There are very big differences within Kreis 11, as the visualizations clearly show. While Oerlikon is on a constantly low level in terms of building projects, **Seebach is clearly leading the way and is responsible for the majority of projects, especially in recent years**. In 2009 and 2010 Affoltern was still the number one Quartier in Kreis 11, but was then overtaken by Seebach and stayed on a relatively low level, comparable to Oerlikon. This was until 2019, when numbers began to grow slightly. 
+<br/><br/>
 
 ### Special Topic: Leaflet with R/Shiny
 
@@ -299,16 +391,16 @@ Our main goal with leaflet was to provide a rich interactive experience for user
 
 #### Leaflet Pros
 
-Firstly, the range of base map options that are available with leaflet are stunning. In the opinion of the authors, this option alone makes leaflet the only option when it comes to implementing maps ahead of Commerical tools such as Tableau and PowerBI (PowerBI in particular is limited here).
+Firstly, the range of base map options that are available with leaflet are stunning. In the opinion of the authors, this option alone makes leaflet the only option when it comes to implementing maps ahead of commercial tools such as Tableau and PowerBI (PowerBI in particular is limited here).
 
-Secondly, the code to quickly develop a map is straightforward. Add your data, chose a basemap, select the marker types you would like and customise. 
+Secondly, the code to quickly develop a map is straightforward. Add your data, chose a basemap, select the marker types you would like and customize. 
 
 Next - the options to fix the boundaries, zoom level and focus point are a big advantage. Again, options like these are absent from tools like PowerBI. In these tools, it is entirely possible to mistakenly zoom out of the map or move it to another area with no way to reset them. With leaflet, you can help the user by ensuring they do not stray from the area of the map containing the interesting data points.
 
 #### Leaflet Cons
 
 As mentioned, we experienced a couple of challenges. Firstly performance.
-We would have liked to pass the entire dataset to Leaflet and for it to summarise as needed in the background. However, when we did this, R-Studio frequently crashed. As a result, we condensed the dataset down into an aggregated format, such that the map would display quickly and comfortably.
+We would have liked to pass the entire data set to Leaflet and for it to summarize as needed in the background. However, when we did this, R-Studio frequently crashed. As a result, we condensed the data set down into an aggregated format, such that the map would display quickly and comfortably.
 
 Secondly, and somewhat related, it was frustrating not to be able to use the map as a filter by clicking on one of the polygons.
 The package does indeed contain functionality for generating map click events, however, to pass these events to other elements in our app would have meant that we also pre-aggregated the data inputs supporting this element which was not possible for all elements.
@@ -319,24 +411,10 @@ Overall we would recommend leaflet as a map visualization. As mentioned, due to 
 
 I would like to make decisions based on that context (is it better to drive or get the train) and I can worry about the exact location later when I am approaching.
 
-Similarly with leaflet, I think it is more interesting for users to click on a datapoint and then see that update in the context of the fixed map. 
+Similarly with leaflet, I think it is more interesting for users to click on a data point and then see that update in the context of the fixed map. 
 
 Additionally, performance remains a concern. I would recommend to our client the use of SQL inside the app could be used to take click events and perform the map filtering in the data set in the database, before returning the results of that aggregated query to the map or other element for the visualization. 
 
-
-## Modelling and Prediction
-
-### Model XYZ
-
-```{r Model}
-
-```
-
-### Prediction XYZ
-
-```{r Prediction}
-
-```
 
 ## Summary and Conclusion
 
