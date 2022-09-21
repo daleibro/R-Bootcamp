@@ -389,6 +389,8 @@ knitr::include_app("https://vordaten.shinyapps.io/StadtZurich/", height = "600px
 
 Our main goal with leaflet was to provide a rich interactive experience for users of our app, such that they could intuitively explore the cleaned dataset. Initially, there were some challenges to overcome and ultimately, we were not entirely satisfied with the final outcome. However, in development of the app, some of the challenges we encountered forced us to change our design thinking on the overall role that maps can play as part of a rich, interactive visual that can tell a useful story which is in itself a great thing.
 
+We believe that users of our app will have an engaging experience, particularly those who are familiar with the City of Zürich. While the trend of the number of building projects as whole is interesting in itself, there are big differences between each of the districts. For example, we see that by filtering on Kreis 3, there was a sharp decline in development between 2016 and 2019 while for the same period in neighboring Kreis 3, this trend was reversed. 
+
 #### Leaflet Pros
 
 Firstly, the range of base map options that are available with leaflet are stunning. In the opinion of the authors, this option alone makes leaflet the only option when it comes to implementing maps ahead of commercial tools such as Tableau and PowerBI (PowerBI in particular is limited here).
