@@ -419,4 +419,11 @@ Additionally, performance remains a concern. I would recommend to our client the
 
 
 ## Summary and Conclusion
+Housing development continues to be an important aspect in the development of all major cities and this is no different for Zürich.
+Using data, we have demonstrated how this development has trended across the city for the last number of year.
 
+R has allowed us to integrate data from multiple sources to help us understand additional aspects of that development with respect to prices and varying locations.
+
+In addition, the Shiny and Leaflet libraries have allowed us to expose this data to a much wider audience to allow them to explore the data in an intuitive way.
+
+We have further applied used that data to provide a model of how that development might continue into the future.
