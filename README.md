@@ -1,7 +1,7 @@
 # W.MSCIDS_RB01.F2201
 
 ## R-Bootcamp
-## Group Project: Managing the COVID Crisis by Predicting Obesity Levels
+## Group Project: Analysis of Building Projects in Zurich
 
 ## Participants:
 ### Keith Lawless, Daniel Leibrock
@@ -14,6 +14,7 @@ https://opendata.swiss/de/dataset/neubauwohnungen-nach-bauprojektstatus-und-stat
 https://www.stadt-zuerich.ch/geodaten/download/Statistische_Zonen
 
 * Pricing Data
+https://data.stadt-zuerich.ch/dataset/bau_hae_lima_preise_anzahl_hae_art_gebiet_bzo_jahr_grpd_od5142
 
 
 
