@@ -26,7 +26,7 @@ library(shiny)
 library(knitr)
 library(ggplot2)
 library(ggridges)
-library(forecast)
+library(mgcv)
 library(kableExtra)
 library(gridExtra)
 library(formattable)
@@ -190,6 +190,14 @@ kreis_11 <- data %>%
   select(- all_of(drop_cols_data)) %>%
   group_by(Jahr, QuarLang) %>%
   summarise(WhgSum = sum(AnzWhg))
+
+kreis_11_prices <- datafinal %>%
+  filter(KreisLang == "Kreis 11") %>% 
+  group_by(Jahr) %>%
+  summarise(AvgPrice = mean(FrQmWohnflStwE))
+
+head(n = 12, kreis_11_prices)
+
 ```
 
 ### Price development and differences
@@ -375,6 +383,53 @@ grid.arrange(plot1, plot2, ncol = 1)
 There are very big differences within Kreis 11, as the visualizations clearly show. While Oerlikon is on a constantly low level in terms of building projects, **Seebach is clearly leading the way and is responsible for the majority of projects, especially in recent years**. In 2009 and 2010 Affoltern was still the number one Quartier in Kreis 11, but was then overtaken by Seebach and stayed on a relatively low level, comparable to Oerlikon. This was until 2019, when numbers began to grow slightly. 
 <br/><br/>
 
+### Forecast of future developments
+
+#### Price prediction for Kreis 11
+
+Since **Kreis 11** is one of the areas with the most activity in recent years, we want to offer a **basic prediciton on future prices in that area**. Due to the highest practical relevance of the figure, we want to **analyze the price per sq.m. of condominium ownership**. Since the overall trend in Zurich is upwards and the timeline from 2009 until 2021 is very short, the results are also expected to show a clear upwards trend.
+<br/><br/>
+
+```{r prediction, echo = FALSE}
+price_gam <- gam(data = kreis_11_prices, AvgPrice ~ Jahr)
+summary(price_gam)
+
+newdata <- data.frame(Jahr = seq(2021, 2025, 1))
+prediction <- predict(price_gam, newdata)
+year <- seq(2021, 2025, 1)
+predicted <- data.frame(prediction)
+predicted <- cbind(predicted, year)
+
+predicted <- predicted %>%  
+  rename(Jahr = year) %>% 
+  rename(AvgPrice = prediction)
+
+kreis_11_prediction <- kreis_11_prices %>% 
+  bind_rows(predicted)
+```
+As we can see, the applied GAM model behaves as expected and predicts linear growth throughout the next years. The adjusted R-squared lies at 0.946, which is a good value for such a basic fit. The prediction shows us, that prices should be at the level of about 14000 CHF 7 sq.m. of condominium living space in 2025, if the development continues as it did in the past. 
+<br/><br/>
+
+```{r prediction_table, echo = FALSE}
+formattable(predicted,
+            "Kreis" = list(color = "grey", font.weight = "bold"))
+```
+<br/><br/>
+
+```{r prediction_plot, echo = FALSE, warning = FALSE, message = FALSE}
+ggplot(kreis_11_prediction, aes(x = Jahr)) +
+  geom_smooth(span = .3, aes(y = `AvgPrice`), size = 1, color = "brown2", se = FALSE) +
+  theme(
+    panel.grid.major = element_line(colour = "gray80"),
+    panel.grid.minor = element_line(colour = NA),
+    axis.text = element_text(family = "sans",
+                             face = "bold"),
+    panel.background = element_rect(fill = "white")
+  ) +
+  ylab("") +
+  xlab("")
+```
+
 ### Special Topic: Leaflet with R/Shiny
 
 For our chapter of choice, we chose leaflet and integrate it with a simple Shiny App. A preview of the app is shown below. 
@@ -419,7 +474,8 @@ Additionally, performance remains a concern. I would recommend to our client the
 
 
 ## Summary and Conclusion
-Housing development continues to be an important aspect in the development of all major cities and this is no different for Zürich.
+
+Housing development continues to be an important aspect in the development of all major cities and this is no different for Zurich.
 Using data, we have demonstrated how this development has trended across the city for the last number of year.
 
 R has allowed us to integrate data from multiple sources to help us understand additional aspects of that development with respect to prices and varying locations.
